@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>نظام القائد الذكي | AlQaed Dashboard</title>
+    <style>
+        :root { --navy: #001f3f; --gold: #D4AF37; --white: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; margin: 0; }
+        header { background: var(--navy); color: var(--gold); padding: 20px; border-bottom: 5px solid var(--gold); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+        .card { background: var(--white); border-radius: 12px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: var(--navy); color: var(--gold); padding: 15px; text-align: right; }
+        td { padding: 15px; border-bottom: 1px solid #eee; }
+        .btn-wa { background: #25D366; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 13px; }
+        .btn-refresh { background: var(--gold); color: var(--navy); border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .alert-red { color: #cc0000; font-weight: bold; }
+        .safe-green { color: #28a745; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1 style="margin:0;">AlQaed | القائد</h1>
+        <small>نظام الإدارة اللوجستية المتكامل</small>
+    </div>
+    <button class="btn-refresh" onclick="fetchData()">تحديث البيانات 🔄</button>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h2 style="color: var(--navy);">لوحة تحكم الكباتن (300 كابتن)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>الكابتن</th>
+                    <th>الأجرة (Agra)</th>
+                    <th>المديونية الحاليّة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const SCRIPT_URL = "ضع_رابط_السكربت_هنا";
+
+    async function fetchData() {
+        try {
+            const response = await fetch(SCRIPT_URL);
+            const data = await response.json();
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = "";
+
+            data.forEach(row => {
+                const debt = parseFloat(row.debt);
+                const statusClass = debt >= 15 ? "alert-red" : "safe-green";
+                
+                // صياغة الرسالة الرسمية لشركة القائد
+                const message = `إشعار رسمي من نظام القائد الذكي:\n\nالكابتن المحترم ${row.name}، نلاحظ تجاوز مديونيتكم الحد المسموح به، حيث بلغت حالياً (${debt}) دينار.\n\nيرجى تسوية الحساب خلال الساعات القادمة لتجنب توقف الحساب مؤقتاً.\n\nشركة القائد - AlQaed`;
+                
+                const waLink = `https://wa.me/${row.phone}?text=${encodeURIComponent(message)}`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${row.name}</strong></td>
+                        <td>${row.price} JOD</td>
+                        <td class="${statusClass}">${debt} دينار</td>
+                        <td>
+                            <a href="${waLink}" target="_blank" class="btn-wa">إرسال تنبيه واتساب ✅</a>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (e) {
+            alert("تأكد من وضع رابط السكربت الصحيح");
+        }
+    }
+    window.onload = fetchData;
+</script>
+
+</body>
+</html>
