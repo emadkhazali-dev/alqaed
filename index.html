@@ -2,74 +2,114 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>AlQaed Dashboard | نظام القائد</title>
+    <title>AlQaed Dashboard | نظام القائد الاحترافي</title>
     <style>
-        :root { --navy: #001f3f; --gold: #D4AF37; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; margin: 0; }
-        header { background: var(--navy); color: var(--gold); padding: 20px; border-bottom: 5px solid var(--gold); display: flex; justify-content: space-between; align-items: center; }
-        .card { background: white; margin: 20px; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #f8f9fa; padding: 15px; text-align: right; border-bottom: 2px solid var(--navy); color: var(--navy); }
-        td { padding: 15px; border-bottom: 1px solid #eee; }
-        .btn-wa { background: #25D366; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: bold; }
-        .status-badge { background: #e1f5fe; color: #01579b; padding: 5px 10px; border-radius: 4px; font-size: 12px; }
-        .val-for { color: green; font-weight: bold; } /* له */
-        .val-against { color: red; font-weight: bold; } /* عليه */
+        :root { --navy: #001f3f; --gold: #D4AF37; --white: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding-bottom: 50px; }
+        header { background: var(--navy); color: var(--gold); padding: 20px; border-bottom: 5px solid var(--gold); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .stats-bar { background: var(--gold); color: var(--navy); padding: 10px 30px; font-weight: bold; display: flex; justify-content: space-around; font-size: 18px; }
+        .container { max-width: 1300px; margin: 20px auto; padding: 0 15px; }
+        .controls { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .search-input { flex: 1; padding: 12px; border-radius: 8px; border: 2px solid var(--navy); font-size: 16px; outline: none; }
+        .card { background: var(--white); border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th { background: var(--navy); color: var(--gold); padding: 15px; text-align: right; white-space: nowrap; }
+        td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: right; }
+        .btn-wa { background: #25D366; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block; font-size: 13px; }
+        .status-tag { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; background: #e1f5fe; color: #01579b; }
+        .val-gold { color: #b8860b; font-weight: bold; }
+        .val-red { color: #cc0000; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1 style="margin:0;">نظام القائد الذكي</h1>
-    <button onclick="fetchData()" style="padding:10px 20px; cursor:pointer; font-weight:bold;">تحديث البيانات 🔄</button>
+    <div>
+        <h1 style="margin:0;">AlQaed | نظام القائد</h1>
+        <small>لوحة التحكم الشاملة - إدارة أبو خالد</small>
+    </div>
+    <button style="padding:12px 25px; cursor:pointer; background:var(--gold); border:none; font-weight:bold; border-radius:8px;" onclick="fetchData()">تحديث البيانات 🔄</button>
 </header>
 
-<div class="card">
-    <table>
-        <thead>
-            <tr>
-                <th>المستهلك</th>
-                <th>المنتج (له)</th>
-                <th>نص الطلب</th>
-                <th>الأجرة (Agra)</th>
-                <th>العمولة (عليه)</th>
-                <th>الحالة</th>
-                <th>إجراء</th>
-            </tr>
-        </thead>
-        <tbody id="table-body">
-            <tr><td colspan="7" style="text-align:center;">جاري جلب البيانات...</td></tr>
-        </tbody>
-    </table>
+<div class="stats-bar">
+    <div id="total-debt">إجمالي المديونية: 0 دينار</div>
+    <div id="captain-count">عدد الكباتن: 0</div>
+</div>
+
+<div class="container">
+    <div class="controls">
+        <input type="text" id="searchInput" class="search-input" placeholder="🔍 ابحث عن اسم كابتن..." onkeyup="filterTable()">
+    </div>
+
+    <div class="card">
+        <table id="captainsTable">
+            <thead>
+                <tr>
+                    <th>المستهلك</th>
+                    <th>المنتج (له)</th>
+                    <th>نص الطلب</th>
+                    <th>الأجرة</th>
+                    <th>العمولة (عليه)</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <tr><td colspan="7" style="text-align:center; padding: 50px;">⏳ جاري جلب كافة التفاصيل...</td></tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzJPNO59nVssOZz1nXnwTBBpVjUSnprNBp_E7gx-kt3VraeVMNNthjp8EaKuMjO2WBa/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7gAhw0TEgiw8xBxLGoA7icdrg2EATg5_8KaE9pYQCwp6uF4wzjXF4eud2QP-s7VRX/exec";
 
     async function fetchData() {
         const tbody = document.getElementById('table-body');
-        tbody.innerHTML = "<tr><td colspan="7" style="text-align:center;">⏳ جاري التحديث...</td></tr>";
         try {
             const response = await fetch(SCRIPT_URL + '?nocache=' + new Date().getTime());
             const data = await response.json();
             tbody.innerHTML = "";
+            let total = 0;
+
             data.forEach(row => {
-                const waMsg = `إشعار شركة القائد:\nالمستهلك: ${row.name}\nالمنتج: ${row.product}\nالطلب: ${row.details}\nالعمولة: ${row.commission}`;
-                const waLink = `https://wa.me/${row.phone}?text=${encodeURIComponent(waMsg)}`;
+                const debt = parseFloat(row.commission) || 0;
+                total += debt;
+                
+                const msg = `شركة القائد:\nكابتن ${row.name}\nطلب: ${row.details}\nالمنتج لك: ${row.product}\nالعمولة المستحقة: ${debt} دينار.`;
+                const waLink = `https://wa.me/${row.phone}?text=${encodeURIComponent(msg)}`;
                 
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${row.name}</strong></td>
-                        <td class="val-for">${row.product}</td>
-                        <td><small>${row.details}</small></td>
-                        <td>${row.agra} JOD</td>
-                        <td class="val-against">${row.commission}</td>
-                        <td><span class="status-badge">${row.status || 'نشط'}</span></td>
-                        <td><a href="${waLink}" class="btn-wa">واتساب ✅</a></td>
+                        <td class="val-gold">${row.product || '-'}</td>
+                        <td style="max-width:200px;"><small>${row.details || '-'}</small></td>
+                        <td>${row.agra || '-'} JOD</td>
+                        <td class="val-red">${debt.toFixed(2)} دينار</td>
+                        <td><span class="status-tag">${row.status || 'نشط'}</span></td>
+                        <td><a href="${waLink}" target="_blank" class="btn-wa">تنبيه واتساب ✅</a></td>
                     </tr>
                 `;
             });
-        } catch(e) { tbody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>فشل في جلب البيانات</td></tr>"; }
+
+            document.getElementById('total-debt').innerText = `إجمالي المديونية: ${total.toFixed(2)} دينار`;
+            document.getElementById('captain-count').innerText = `عدد الكباتن: ${data.length}`;
+        } catch (e) { tbody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>تأكد من تحديث ونشر السكريبت (Anyone)</td></tr>"; }
+    }
+
+    function filterTable() {
+        let input = document.getElementById("searchInput");
+        let filter = input.value.toUpperCase();
+        let table = document.getElementById("captainsTable");
+        let tr = table.getElementsByTagName("tr");
+
+        for (let i = 1; i < tr.length; i++) {
+            let td = tr[i].getElementsByTagName("td")[0];
+            if (td) {
+                let textValue = td.textContent || td.innerText;
+                tr[i].style.display = textValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+            }
+        }
     }
     window.onload = fetchData;
 </script>
