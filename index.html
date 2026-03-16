@@ -1,33 +1,117 @@
-async function fetchData() {
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>نظام القائد اللوجستي | AlQaed</title>
+    <style>
+        :root { --navy: #001f3f; --gold: #D4AF37; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; margin: 0; color: #333; }
+        header { background: var(--navy); color: var(--gold); padding: 20px; border-bottom: 5px solid var(--gold); text-align: center; }
+        .stats-bar { background: var(--gold); color: var(--navy); padding: 12px; display: flex; justify-content: space-around; font-weight: bold; font-size: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .container { max-width: 1400px; margin: 20px auto; padding: 0 20px; }
+        .search-box { width: 100%; padding: 15px; margin-bottom: 25px; border: 2px solid var(--navy); border-radius: 10px; font-size: 18px; outline: none; }
+        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        th { background: var(--navy); color: var(--gold); padding: 15px; text-align: right; font-size: 16px; border: 1px solid #002d5a; }
+        td { padding: 15px; border-bottom: 1px solid #eee; text-align: right; font-size: 15px; }
+        tr:hover { background-color: #f9f9f9; }
+        .btn-wa { background: #25D366; color: white; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; transition: 0.3s; }
+        .btn-wa:hover { background: #1ebe57; transform: scale(1.05); }
+        .badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .status-active { background: #e3f2fd; color: #1976d2; }
+        .val-total { color: #d32f2f; font-weight: bold; font-size: 16px; }
+        .val-comm { color: #0056b3; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1 style="margin:0;">AlQaed | نظام القائد اللوجستي</h1>
+    <p style="margin:5px 0 0;">لوحة التحكم الشاملة - إدارة أبو خالد</p>
+</header>
+
+<div class="stats-bar">
+    <div id="total-debt">إجمالي المديونية: 0 دينار</div>
+    <div id="captain-count">عدد الكباتن: 0</div>
+</div>
+
+<div class="container">
+    <input type="text" id="searchInput" class="search-box" placeholder="🔍 ابحث عن اسم كابتن (المستهلك)..." onkeyup="filterTable()">
+    
+    <div class="card">
+        <table id="captainsTable">
+            <thead>
+                <tr>
+                    <th>المستهلك</th>
+                    <th>المنتج</th>
+                    <th>نص الطلب</th>
+                    <th>الأجرة (Agra)</th>
+                    <th>عمولة المنتج (15%)</th>
+                    <th>المديونية الكلية</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <tr><td colspan="8" style="text-align:center; padding:50px;">جاري جلب بيانات نظام القائد...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqUkh_erFVFGR6AgEYqjDgV-HtAP01HJSrVXt1kqfRAc80EljMMODT7qcUruIfbRBL/exec";
+
+    async function fetchData() {
         const tbody = document.getElementById('table-body');
         try {
             const response = await fetch(SCRIPT_URL + '?nocache=' + new Date().getTime());
             const data = await response.json();
             tbody.innerHTML = "";
-            let totalDebt = 0;
+            let totalAll = 0;
 
             data.forEach(row => {
-                // تحويل القيم إلى أرقام بدقة
-                const agraValue = parseFloat(row.agra) || 0;
-                const prodCommValue = parseFloat(row.commProduct) || 0;
-                const grandTotal = agraValue + prodCommValue;
-                
-                totalDebt += grandTotal;
-                
-                const msg = `شركة القائد:\nكابتن ${row.name}\nالأجرة: ${agraValue}\nعمولة المنتج: ${prodCommValue.toFixed(2)}\nالمجموع المطلوب: ${grandTotal.toFixed(2)} دينار.`;
+                const agra = parseFloat(row.agra) || 0;
+                const pComm = parseFloat(row.commProduct) || 0;
+                const grandTotal = agra + pComm;
+                totalAll += grandTotal;
+
+                const msg = `شركة القائد:\nكابتن ${row.name}\nالأجرة: ${agra}\nعمولة المنتج: ${pComm.toFixed(2)}\nالمجموع المطلوب: ${grandTotal.toFixed(2)} دينار.`;
                 const waLink = `https://wa.me/${row.phone}?text=${encodeURIComponent(msg)}`;
                 
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${row.name}</strong></td>
-                        <td>${agraValue} JOD</td>
-                        <td style="color:blue; font-weight:bold;">${prodCommValue.toFixed(2)}</td>
-                        <td style="color:red; font-weight:bold;">${grandTotal.toFixed(2)} دينار</td>
+                        <td>${row.product || '-'}</td>
+                        <td><small>${row.details || '-'}</small></td>
+                        <td>JOD ${agra.toFixed(2)}</td>
+                        <td class="val-comm">${pComm.toFixed(2)} د.أ</td>
+                        <td class="val-total">${grandTotal.toFixed(2)} دينار</td>
+                        <td><span class="badge status-active">${row.status || 'نشط'}</span></td>
                         <td><a href="${waLink}" target="_blank" class="btn-wa">تنبيه واتساب ✅</a></td>
                     </tr>
                 `;
             });
 
-            document.getElementById('total-debt').innerText = `إجمالي المديونية: ${totalDebt.toFixed(2)} دينار`;
-        } catch (e) { console.log("خطأ في جلب البيانات"); }
+            document.getElementById('total-debt').innerText = `إجمالي المديونية: ${totalAll.toFixed(2)} دينار`;
+            document.getElementById('captain-count').innerText = `عدد الكباتن: ${data.length}`;
+        } catch (e) { 
+            tbody.innerHTML = "<tr><td colspan='8' style='text-align:center; color:red;'>خطأ في الاتصال بالبيانات. يرجى التأكد من رابط السكريبت.</td></tr>"; 
+        }
     }
+
+    function filterTable() {
+        let input = document.getElementById("searchInput");
+        let filter = input.value.toUpperCase();
+        let tr = document.getElementById("captainsTable").getElementsByTagName("tr");
+        for (let i = 1; i < tr.length; i++) {
+            let td = tr[i].getElementsByTagName("td")[0];
+            if (td) {
+                tr[i].style.display = (td.textContent || td.innerText).toUpperCase().indexOf(filter) > -1 ? "" : "none";
+            }
+        }
+    }
+    window.onload = fetchData;
+</script>
+</body>
+</html>
