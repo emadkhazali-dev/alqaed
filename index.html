@@ -2,41 +2,37 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>نظام القائد اللوجستي | AlQaed</title>
+    <title>نظام القائد | AlQaed Dashboard</title>
     <style>
         :root { --navy: #001f3f; --gold: #D4AF37; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; margin: 0; color: #333; }
-        header { background: var(--navy); color: var(--gold); padding: 20px; border-bottom: 5px solid var(--gold); text-align: center; }
-        .stats-bar { background: var(--gold); color: var(--navy); padding: 12px; display: flex; justify-content: space-around; font-weight: bold; font-size: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .container { max-width: 1400px; margin: 20px auto; padding: 0 20px; }
-        .search-box { width: 100%; padding: 15px; margin-bottom: 25px; border: 2px solid var(--navy); border-radius: 10px; font-size: 18px; outline: none; }
-        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        th { background: var(--navy); color: var(--gold); padding: 15px; text-align: right; font-size: 16px; border: 1px solid #002d5a; }
-        td { padding: 15px; border-bottom: 1px solid #eee; text-align: right; font-size: 15px; }
-        tr:hover { background-color: #f9f9f9; }
-        .btn-wa { background: #25D366; color: white; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; transition: 0.3s; }
-        .btn-wa:hover { background: #1ebe57; transform: scale(1.05); }
-        .badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-        .status-active { background: #e3f2fd; color: #1976d2; }
-        .val-total { color: #d32f2f; font-weight: bold; font-size: 16px; }
-        .val-comm { color: #0056b3; font-weight: bold; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; margin: 0; }
+        header { background: var(--navy); color: var(--gold); padding: 15px 30px; border-bottom: 5px solid var(--gold); display: flex; justify-content: space-between; align-items: center; }
+        .stats-bar { background: var(--gold); color: var(--navy); padding: 12px; display: flex; justify-content: space-around; font-weight: bold; font-size: 18px; }
+        .container { max-width: 1400px; margin: 20px auto; padding: 0 15px; }
+        .search-box { width: 100%; padding: 12px; margin-bottom: 20px; border: 2px solid var(--navy); border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--navy); color: var(--gold); padding: 12px; text-align: right; }
+        td { padding: 12px; border-bottom: 1px solid #eee; text-align: right; }
+        .btn-wa { background: #25D366; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 12px; }
+        .val-total { color: #cc0000; font-weight: bold; }
+        .val-blue { color: #0056b3; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1 style="margin:0;">AlQaed | نظام القائد اللوجستي</h1>
-    <p style="margin:5px 0 0;">لوحة التحكم الشاملة - إدارة أبو خالد</p>
+    <h1 style="margin:0;">AlQaed Dashboard | إدارة أبو خالد</h1>
+    <button onclick="fetchData()" style="padding:10px 20px; cursor:pointer; background:var(--gold); border:none; font-weight:bold; border-radius:5px;">تحديث البيانات 🔄</button>
 </header>
 
 <div class="stats-bar">
-    <div id="total-debt">إجمالي المديونية: 0 دينار</div>
+    <div id="total-debt">إجمالي المديونية الكلية: 0 دينار</div>
     <div id="captain-count">عدد الكباتن: 0</div>
 </div>
 
 <div class="container">
-    <input type="text" id="searchInput" class="search-box" placeholder="🔍 ابحث عن اسم كابتن (المستهلك)..." onkeyup="filterTable()">
+    <input type="text" id="searchInput" class="search-box" placeholder="🔍 ابحث عن اسم كابتن..." onkeyup="filterTable()">
     
     <div class="card">
         <table id="captainsTable">
@@ -53,14 +49,15 @@
                 </tr>
             </thead>
             <tbody id="table-body">
-                <tr><td colspan="8" style="text-align:center; padding:50px;">جاري جلب بيانات نظام القائد...</td></tr>
+                <tr><td colspan="8" style="text-align:center;">جاري جلب البيانات...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqUkh_erFVFGR6AgEYqjDgV-HtAP01HJSrVXt1kqfRAc80EljMMODT7qcUruIfbRBL/exec";
+    // استبدل الرابط أدناه بالرابط الجديد من الـ New Deployment
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzC6jl5Mc2E6QIrxp0khUneVE9R0HsDDtVFLiKQR5e2OHB0cbtZBxctfcjEGCCtOzrc/exec";
 
     async function fetchData() {
         const tbody = document.getElementById('table-body');
@@ -68,15 +65,15 @@
             const response = await fetch(SCRIPT_URL + '?nocache=' + new Date().getTime());
             const data = await response.json();
             tbody.innerHTML = "";
-            let totalAll = 0;
+            let totalSum = 0;
 
             data.forEach(row => {
                 const agra = parseFloat(row.agra) || 0;
                 const pComm = parseFloat(row.commProduct) || 0;
                 const grandTotal = agra + pComm;
-                totalAll += grandTotal;
-
-                const msg = `شركة القائد:\nكابتن ${row.name}\nالأجرة: ${agra}\nعمولة المنتج: ${pComm.toFixed(2)}\nالمجموع المطلوب: ${grandTotal.toFixed(2)} دينار.`;
+                totalSum += grandTotal;
+                
+                const msg = `شركة القائد:\nكابتن ${row.name}\nالأجرة: ${agra}\nعمولة المنتج: ${pComm.toFixed(2)}\nالمجموع: ${grandTotal.toFixed(2)} دينار.`;
                 const waLink = `https://wa.me/${row.phone}?text=${encodeURIComponent(msg)}`;
                 
                 tbody.innerHTML += `
@@ -85,19 +82,17 @@
                         <td>${row.product || '-'}</td>
                         <td><small>${row.details || '-'}</small></td>
                         <td>JOD ${agra.toFixed(2)}</td>
-                        <td class="val-comm">${pComm.toFixed(2)} د.أ</td>
+                        <td class="val-blue">${pComm.toFixed(2)}</td>
                         <td class="val-total">${grandTotal.toFixed(2)} دينار</td>
-                        <td><span class="badge status-active">${row.status || 'نشط'}</span></td>
+                        <td>${row.status || 'نشط'}</td>
                         <td><a href="${waLink}" target="_blank" class="btn-wa">تنبيه واتساب ✅</a></td>
                     </tr>
                 `;
             });
 
-            document.getElementById('total-debt').innerText = `إجمالي المديونية: ${totalAll.toFixed(2)} دينار`;
+            document.getElementById('total-debt').innerText = `إجمالي المديونية الكلية: ${totalSum.toFixed(2)} دينار`;
             document.getElementById('captain-count').innerText = `عدد الكباتن: ${data.length}`;
-        } catch (e) { 
-            tbody.innerHTML = "<tr><td colspan='8' style='text-align:center; color:red;'>خطأ في الاتصال بالبيانات. يرجى التأكد من رابط السكريبت.</td></tr>"; 
-        }
+        } catch (e) { tbody.innerHTML = "خطأ في الاتصال بالبيانات"; }
     }
 
     function filterTable() {
