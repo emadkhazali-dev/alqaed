@@ -2,59 +2,62 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>نظام القائد | AlQaed Dashboard</title>
+    <title>نظام القائد الذكي | AlQaed Dashboard</title>
     <style>
         :root { --navy: #001f3f; --gold: #D4AF37; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; margin: 0; }
         header { background: var(--navy); color: var(--gold); padding: 20px; border-bottom: 5px solid var(--gold); text-align: center; }
-        .stats-bar { background: var(--gold); color: var(--navy); padding: 12px; display: flex; justify-content: space-around; font-weight: bold; font-size: 18px; }
+        .stats-bar { background: var(--gold); color: var(--navy); padding: 12px; display: flex; justify-content: space-around; font-weight: bold; font-size: 19px; }
         .container { max-width: 1400px; margin: 20px auto; padding: 0 15px; }
-        .search-box { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid var(--navy); border-radius: 10px; font-size: 17px; outline: none; }
+        .search-box { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid var(--navy); border-radius: 10px; font-size: 17px; outline: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
-        th { background: var(--navy); color: var(--gold); padding: 15px; text-align: right; }
+        th { background: var(--navy); color: var(--gold); padding: 12px; text-align: right; white-space: nowrap; }
         td { padding: 12px; border-bottom: 1px solid #eee; text-align: right; }
-        .val-red { color: #d32f2f; font-weight: bold; }
-        .val-green { color: #2e7d32; font-weight: bold; }
+        .val-debt { color: #d32f2f; font-weight: bold; direction: ltr; display: inline-block; }
+        .val-credit { color: #2e7d32; font-weight: bold; }
         .btn-wa { background: #25D366; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 13px; }
+        .btn-wa:hover { background: #1ebe57; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>AlQaed Dashboard | إدارة أبو خالد</h1>
+    <h1 style="margin:0;">AlQaed Dashboard | إدارة أبو خالد</h1>
+    <p style="margin:5px 0 0;">نظام القائد اللوجستي - المحاسبة الذكية</p>
 </header>
 
 <div class="stats-bar">
-    <div id="total-debt">إجمالي العمولات المطلوبة: 0.00 دينار</div>
-    <div id="count">عدد العمليات: 0</div>
+    <div id="total-summary">إجمالي عمولات النظام: 0.00 دينار</div>
+    <div id="count-summary">عدد العمليات: 0</div>
 </div>
 
 <div class="container">
-    <input type="text" id="searchInput" class="search-box" placeholder="🔍 ابحث عن اسم (المستهلك أو المنتج)..." onkeyup="filterTable()">
+    <input type="text" id="searchInput" class="search-box" placeholder="🔍 ابحث عن اسم المستهلك أو المنتج..." onkeyup="filterTable()">
     
     <div class="card">
         <table id="captainsTable">
             <thead>
                 <tr>
-                    <th>المستهلك (عليه)</th>
-                    <th>المنتج (له)</th>
+                    <th>المستهلك</th>
+                    <th>المنتج</th>
                     <th>الأجرة (Agra)</th>
-                    <th>العمولة (15%)</th>
-                    <th>صافي المنتج (+)</th>
+                    <th>مديونية المستهلك (15%-)</th>
+                    <th>صافي المنتج (15%+)</th>
                     <th>الحالة</th>
                     <th>الإجراءات</th>
                 </tr>
             </thead>
             <tbody id="table-body">
-                <tr><td colspan="7" style="text-align:center;">جاري معالجة البيانات حسابياً...</td></tr>
+                <tr><td colspan="7" style="text-align:center; padding:30px;">جاري جلب بيانات العمولات وتحديث المديونيات...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw031y4_gQXJDCW5wfqa_eAtOrtVy5opN1zbHVDh1lm0r2_6vnUgJTMbYRalWCrQTEX/exec";
+    // هام جداً: ضع رابط الـ Deployment الجديد هنا
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbya_GZ8LH5WiT7rdxJ0olZ-5FfMeKa5WTh1mocFi2UCY6ySuOUjTeqIqYueE5EFTYby/exec";
 
     async function fetchData() {
         const tbody = document.getElementById('table-body');
@@ -65,38 +68,42 @@
             let totalComm = 0;
 
             data.forEach(row => {
-                const commission = parseFloat(row.commVal) || 0;
-                totalComm += commission;
+                const comm = parseFloat(row.commVal) || 0; 
+                totalComm += comm;
 
-                const msg = `نظام القائد:\nالمستهلك: ${row.consumerName} (عليه عمولة: ${commission.toFixed(2)})\nالمنتج: ${row.productName} (له صافي: ${commission.toFixed(2)})`;
+                // رسالة الواتساب المحدثة
+                const msg = `شركة القائد:\nالمستهلك: ${row.consumerName}\nالمديونية (عمولة): -${comm.toFixed(2)}\nالمنتج: ${row.productName}\nالصافي: +${comm.toFixed(2)}\nالحالة: ${row.status}`;
                 
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${row.consumerName}</strong></td>
                         <td><strong>${row.productName}</strong></td>
                         <td>JOD ${row.agra.toFixed(2)}</td>
-                        <td class="val-red">- ${commission.toFixed(2)}</td>
-                        <td class="val-green">+ ${commission.toFixed(2)}</td>
+                        <td><span class="val-debt">-${comm.toFixed(2)}</span></td>
+                        <td><span class="val-credit">+${comm.toFixed(2)}</span></td>
                         <td>${row.status || 'تم'}</td>
-                        <td><a href="https://wa.me/${row.phone}?text=${encodeURIComponent(msg)}" class="btn-wa" target="_blank">إرسال إشعار ✅</a></td>
+                        <td><a href="https://wa.me/${row.phone}?text=${encodeURIComponent(msg)}" class="btn-wa" target="_blank">تنبيه واتساب ✅</a></td>
                     </tr>
                 `;
             });
 
-            document.getElementById('total-debt').innerText = `إجمالي العمولات المتداولة: ${totalComm.toFixed(2)} دينار`;
-            document.getElementById('count').innerText = `عدد العمليات: ${data.length}`;
-        } catch (e) { tbody.innerHTML = "خطأ في الاتصال"; }
+            document.getElementById('total-summary').innerText = `إجمالي عمولات النظام: ${totalComm.toFixed(2)} دينار`;
+            document.getElementById('count-summary').innerText = `عدد العمليات: ${data.length}`;
+        } catch (e) { 
+            tbody.innerHTML = "<tr><td colspan='7' style='text-align:center; color:red;'>خطأ في الاتصال: تأكد من رابط السكريبت ونشره كـ New Deployment</td></tr>"; 
+        }
     }
 
+    // وظيفة البحث الذكي
     function filterTable() {
         let filter = document.getElementById("searchInput").value.toUpperCase();
         let tr = document.getElementById("captainsTable").getElementsByTagName("tr");
         for (let i = 1; i < tr.length; i++) {
-            let tdName = tr[i].getElementsByTagName("td")[0];
-            let tdProd = tr[i].getElementsByTagName("td")[1];
-            if (tdName || tdProd) {
-                let txtValue = (tdName.textContent || tdName.innerText) + (tdProd.textContent || tdProd.innerText);
-                tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+            let tdConsumer = tr[i].getElementsByTagName("td")[0];
+            let tdProduct = tr[i].getElementsByTagName("td")[1];
+            if (tdConsumer || tdProduct) {
+                let combinedText = (tdConsumer.textContent || tdConsumer.innerText) + " " + (tdProduct.textContent || tdProduct.innerText);
+                tr[i].style.display = combinedText.toUpperCase().indexOf(filter) > -1 ? "" : "none";
             }
         }
     }
