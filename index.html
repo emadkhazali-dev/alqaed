@@ -1,81 +1,33 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>AlQaed Dashboard | نظام القائد</title>
-    <style>
-        :root { --navy: #001f3f; --gold: #D4AF37; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; margin: 0; }
-        header { background: var(--navy); color: var(--gold); padding: 15px; border-bottom: 5px solid var(--gold); text-align: center; }
-        .stats { background: var(--gold); padding: 10px; display: flex; justify-content: space-around; font-weight: bold; }
-        .card { background: white; margin: 20px; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: var(--navy); color: var(--gold); padding: 12px; text-align: right; }
-        td { padding: 12px; border-bottom: 1px solid #eee; }
-        .btn-wa { background: #25D366; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; }
-        .val-red { color: #cc0000; font-weight: bold; }
-    </style>
-</head>
-<body>
-
-<header>
-    <h1>AlQaed | نظام القائد اللوجستي</h1>
-</header>
-
-<div class="stats">
-    <div id="total-debt">إجمالي المديونية: 0 دينار</div>
-    <div id="count">عدد الكباتن: 0</div>
-</div>
-
-<div class="card">
-    <table>
-        <thead>
-            <tr>
-                <th>المستهلك</th>
-                <th>الأجرة (Agra)</th>
-                <th>عمولة المنتج (15%)</th>
-                <th>المديونية الكلية</th>
-                <th>الإجراء</th>
-            </tr>
-        </thead>
-        <tbody id="table-body"></tbody>
-    </table>
-</div>
-
-<script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6Fs5CiV9nYhwqcFjcOcppZnp5kTL1aW3XD6oKh8RHefC3jyVAdhk7Sc8MLmrED1Ja/exec";
-
-    async function fetchData() {
+async function fetchData() {
         const tbody = document.getElementById('table-body');
         try {
             const response = await fetch(SCRIPT_URL + '?nocache=' + new Date().getTime());
             const data = await response.json();
             tbody.innerHTML = "";
-            let totalOverall = 0;
+            let totalDebt = 0;
 
             data.forEach(row => {
-                const agra = parseFloat(row.agra) || 0; // القيمة من العمود E
-                const pComm = parseFloat(row.commProduct) || 0; // الـ 15% من العمود I
-                const debt = agra + pComm; // المجموع
-                totalOverall += debt;
-
-                const msg = `شركة القائد:\nكابتن ${row.name}\nالأجرة: ${agra}\nعمولة المنتج: ${pComm}\nالمطلوب: ${debt} دينار.`;
+                // تحويل القيم إلى أرقام بدقة
+                const agraValue = parseFloat(row.agra) || 0;
+                const prodCommValue = parseFloat(row.commProduct) || 0;
+                const grandTotal = agraValue + prodCommValue;
+                
+                totalDebt += grandTotal;
+                
+                const msg = `شركة القائد:\nكابتن ${row.name}\nالأجرة: ${agraValue}\nعمولة المنتج: ${prodCommValue.toFixed(2)}\nالمجموع المطلوب: ${grandTotal.toFixed(2)} دينار.`;
+                const waLink = `https://wa.me/${row.phone}?text=${encodeURIComponent(msg)}`;
                 
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${row.name}</strong></td>
-                        <td>${agra} JOD</td>
-                        <td style="color:blue;">${pComm.toFixed(2)}</td>
-                        <td class="val-red">${debt.toFixed(2)} دينار</td>
-                        <td><a href="https://wa.me/${row.phone}?text=${encodeURIComponent(msg)}" class="btn-wa">واتساب ✅</a></td>
+                        <td>${agraValue} JOD</td>
+                        <td style="color:blue; font-weight:bold;">${prodCommValue.toFixed(2)}</td>
+                        <td style="color:red; font-weight:bold;">${grandTotal.toFixed(2)} دينار</td>
+                        <td><a href="${waLink}" target="_blank" class="btn-wa">تنبيه واتساب ✅</a></td>
                     </tr>
                 `;
             });
-            document.getElementById('total-debt').innerText = `إجمالي المديونية: ${totalOverall.toFixed(2)} دينار`;
-            document.getElementById('count').innerText = `عدد الكباتن: ${data.length}`;
-        } catch (e) { console.log(e); }
+
+            document.getElementById('total-debt').innerText = `إجمالي المديونية: ${totalDebt.toFixed(2)} دينار`;
+        } catch (e) { console.log("خطأ في جلب البيانات"); }
     }
-    window.onload = fetchData;
-</script>
-</body>
-</html>
