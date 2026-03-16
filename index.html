@@ -2,61 +2,59 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>AlQaed Dashboard | نظام القائد</title>
+    <title>نظام القائد | AlQaed Dashboard</title>
     <style>
         :root { --navy: #001f3f; --gold: #D4AF37; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; margin: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; }
         header { background: var(--navy); color: var(--gold); padding: 20px; border-bottom: 5px solid var(--gold); text-align: center; }
-        .stats-bar { background: var(--gold); color: var(--navy); padding: 10px; display: flex; justify-content: space-around; font-weight: bold; font-size: 18px; }
+        .stats-bar { background: var(--gold); color: var(--navy); padding: 12px; display: flex; justify-content: space-around; font-weight: bold; font-size: 18px; }
         .container { max-width: 1400px; margin: 20px auto; padding: 0 15px; }
-        .search-box { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid var(--navy); border-radius: 10px; font-size: 18px; outline: none; }
-        .card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow-x: auto; }
+        .search-box { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid var(--navy); border-radius: 10px; font-size: 17px; outline: none; }
+        .card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
         th { background: var(--navy); color: var(--gold); padding: 15px; text-align: right; }
         td { padding: 12px; border-bottom: 1px solid #eee; text-align: right; }
-        .btn-wa { background: #25D366; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; }
         .val-red { color: #d32f2f; font-weight: bold; }
-        .val-blue { color: #0056b3; font-weight: bold; }
+        .val-green { color: #2e7d32; font-weight: bold; }
+        .btn-wa { background: #25D366; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 13px; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>AlQaed | نظام القائد اللوجستي</h1>
-    <p>لوحة التحكم الشاملة - إدارة أبو خالد</p>
+    <h1>AlQaed Dashboard | إدارة أبو خالد</h1>
 </header>
 
 <div class="stats-bar">
-    <div id="total-debt">إجمالي المديونية: 0 دينار</div>
-    <div id="count">عدد الكباتن: 0</div>
+    <div id="total-debt">إجمالي العمولات المطلوبة: 0.00 دينار</div>
+    <div id="count">عدد العمليات: 0</div>
 </div>
 
 <div class="container">
-    <input type="text" id="searchInput" class="search-box" placeholder="🔍 ابحث عن اسم الكابتن..." onkeyup="filterTable()">
+    <input type="text" id="searchInput" class="search-box" placeholder="🔍 ابحث عن اسم (المستهلك أو المنتج)..." onkeyup="filterTable()">
     
     <div class="card">
         <table id="captainsTable">
             <thead>
                 <tr>
-                    <th>المستهلك (الكابتن)</th>
-                    <th>المنتج</th>
+                    <th>المستهلك (عليه)</th>
+                    <th>المنتج (له)</th>
                     <th>الأجرة (Agra)</th>
-                    <th>عمولة المنتج (15%)</th>
-                    <th>المديونية الكلية</th>
+                    <th>العمولة (15%)</th>
+                    <th>صافي المنتج (+)</th>
                     <th>الحالة</th>
                     <th>الإجراءات</th>
                 </tr>
             </thead>
             <tbody id="table-body">
-                <tr><td colspan="7" style="text-align:center;">جاري جلب البيانات...</td></tr>
+                <tr><td colspan="7" style="text-align:center;">جاري معالجة البيانات حسابياً...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    // ضع رابط الـ Deployment الجديد هنا
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5UrPBc8yq0X47EmfizqKPxiBt4Ki-S_QWNQX1A3ZN7MO12nEW_7p63TX30o2uQLnI/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw031y4_gQXJDCW5wfqa_eAtOrtVy5opN1zbHVDh1lm0r2_6vnUgJTMbYRalWCrQTEX/exec";
 
     async function fetchData() {
         const tbody = document.getElementById('table-body');
@@ -64,46 +62,41 @@
             const response = await fetch(SCRIPT_URL + '?nocache=' + new Date().getTime());
             const data = await response.json();
             tbody.innerHTML = "";
-            let totalAll = 0;
+            let totalComm = 0;
 
             data.forEach(row => {
-                const agra = parseFloat(row.agra) || 0;
-                const pComm = parseFloat(row.commProduct) || 0;
-                const grandTotal = agra + pComm;
-                totalAll += grandTotal;
+                const commission = parseFloat(row.commVal) || 0;
+                totalComm += commission;
 
-                const msg = `شركة القائد:\nكابتن ${row.name}\nالأجرة: ${agra}\nعمولة المنتج: ${pComm.toFixed(2)}\nالمجموع: ${grandTotal.toFixed(2)} دينار.`;
-                const waLink = `https://wa.me/${row.phone}?text=${encodeURIComponent(msg)}`;
+                const msg = `نظام القائد:\nالمستهلك: ${row.consumerName} (عليه عمولة: ${commission.toFixed(2)})\nالمنتج: ${row.productName} (له صافي: ${commission.toFixed(2)})`;
                 
                 tbody.innerHTML += `
                     <tr>
-                        <td><strong>${row.name}</strong></td>
-                        <td>${row.product || '-'}</td>
-                        <td>JOD ${agra.toFixed(2)}</td>
-                        <td class="val-blue">${pComm.toFixed(2)}</td>
-                        <td class="val-red">${grandTotal.toFixed(2)} دينار</td>
-                        <td>${row.status || 'نشط'}</td>
-                        <td><a href="${waLink}" target="_blank" class="btn-wa">تنبيه واتساب ✅</a></td>
+                        <td><strong>${row.consumerName}</strong></td>
+                        <td><strong>${row.productName}</strong></td>
+                        <td>JOD ${row.agra.toFixed(2)}</td>
+                        <td class="val-red">- ${commission.toFixed(2)}</td>
+                        <td class="val-green">+ ${commission.toFixed(2)}</td>
+                        <td>${row.status || 'تم'}</td>
+                        <td><a href="https://wa.me/${row.phone}?text=${encodeURIComponent(msg)}" class="btn-wa" target="_blank">إرسال إشعار ✅</a></td>
                     </tr>
                 `;
             });
 
-            document.getElementById('total-debt').innerText = `إجمالي المديونية: ${totalAll.toFixed(2)} دينار`;
-            document.getElementById('count').innerText = `عدد الكباتن: ${data.length}`;
+            document.getElementById('total-debt').innerText = `إجمالي العمولات المتداولة: ${totalComm.toFixed(2)} دينار`;
+            document.getElementById('count').innerText = `عدد العمليات: ${data.length}`;
         } catch (e) { tbody.innerHTML = "خطأ في الاتصال"; }
     }
 
-    // وظيفة البحث بالاسم
     function filterTable() {
-        let input = document.getElementById("searchInput");
-        let filter = input.value.toUpperCase();
-        let table = document.getElementById("captainsTable");
-        let tr = table.getElementsByTagName("tr");
+        let filter = document.getElementById("searchInput").value.toUpperCase();
+        let tr = document.getElementById("captainsTable").getElementsByTagName("tr");
         for (let i = 1; i < tr.length; i++) {
-            let td = tr[i].getElementsByTagName("td")[0]; // البحث في العمود الأول (الاسم)
-            if (td) {
-                let textValue = td.textContent || td.innerText;
-                tr[i].style.display = textValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+            let tdName = tr[i].getElementsByTagName("td")[0];
+            let tdProd = tr[i].getElementsByTagName("td")[1];
+            if (tdName || tdProd) {
+                let txtValue = (tdName.textContent || tdName.innerText) + (tdProd.textContent || tdProd.innerText);
+                tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
             }
         }
     }
